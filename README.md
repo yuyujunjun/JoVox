@@ -160,7 +160,8 @@ $VFM_IMAGE_ROOT/<subset>/renders3/<uid>/transforms.json          camera poses (o
 ```
 `PROJECT_DATA` defaults to `./data` and `VFM_IMAGE_ROOT` to `./data/TRELLIS-500K`.
 With `transforms.json`, condition images come from views with elevation in [−10°, 30°]. Without it, all views are used.
-We trained on the sketchfab, 3D-FUTURE, HSSD and ABO subsets and kept Toys4k for testing. {{RENDERING_DESCRIPTION}}
+We trained on the sketchfab, 3D-FUTURE, HSSD and ABO subsets and kept Toys4k for testing.
+The condition images of each object are RGBA renderings stored in `$VFM_IMAGE_ROOT/<subset>/renders3/<uid>/`.
 
 The occupancy files are made from meshes in two steps. The subset directory needs the `metadata.csv` of the
 TRELLIS.2 data toolkit, with columns `sha256` and `local_path` (absolute, or relative to the working directory):
