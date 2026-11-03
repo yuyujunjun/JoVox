@@ -60,13 +60,12 @@ Three steps: background removal, structure generation, and meshing with the seco
     pip install -r requirements.txt
     ```
 
-2. Clone [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) into `third_party/TRELLIS.2` at the commit we used:
+2. Clone [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) into `third_party/TRELLIS.2`, and install `flex_gemm`, `cumesh`,
+   `nvdiffrast`, `utils3d` and `flash-attn` with its `setup.sh`:
     ```sh
     git clone --recursive https://github.com/microsoft/TRELLIS.2.git third_party/TRELLIS.2
     git -C third_party/TRELLIS.2 checkout 5565d24
     ```
-    Then install `flex_gemm`, `cumesh`, `nvdiffrast`, `utils3d` and `flash-attn` with its `setup.sh`.
-    The code finds `third_party/TRELLIS.2` by itself.
 
 3. Install [o-voxel-gpu](https://github.com/yuyujunjun/o-voxel-gpu) in place of the `o_voxel` that TRELLIS.2 ships:
     ```sh
@@ -75,10 +74,10 @@ Three steps: background removal, structure generation, and meshing with the seco
     pip install ./o-voxel-gpu --no-build-isolation
     ```
 
-4. For evaluation, install [PyTorch3D](https://github.com/facebookresearch/pytorch3d) (0.7.9 tested).
+4. For evaluation only, install [PyTorch3D](https://github.com/facebookresearch/pytorch3d) (0.7.9 tested).
 
-The `prep` and `mesh` stages of the image-to-mesh script run in a separate TRELLIS.2 environment,
-set up as in the TRELLIS.2 README and with o-voxel-gpu from step 3.
+> The `prep` and `mesh` stages of [Image to Mesh](#1-image-to-mesh) run in a second environment set up by the
+> TRELLIS.2 README, with o-voxel-gpu from step 3.
 
 
 ## 📦 Pretrained Weights
@@ -87,111 +86,121 @@ set up as in the TRELLIS.2 README and with o-voxel-gpu from step 3.
 | :--- | :--- | :--- |
 | **JoVox** | 64³ | [Hugging Face](https://huggingface.co/{{HF_REPO}}) |
 
-All models are read from the Hugging Face cache (`$HF_HOME`), so they can be downloaded once and copied to an offline machine:
+Download it together with the models that the code uses:
 ```sh
 huggingface-cli download {{HF_REPO}} model.safetensors --local-dir checkpoints/voxelgen64
 huggingface-cli download facebook/dinov3-vitl16-pretrain-lvd1689m        # gated: accept the license on its page first
 huggingface-cli download microsoft/TRELLIS.2-4B --revision af44b45f2e35a493886929c6d786e563ec68364d
 huggingface-cli download briaai/RMBG-2.0                                 # gated: accept the license on its page first
-```
-DINOv3 encodes the condition image. TRELLIS.2-4B and RMBG-2.0 are used only by the image-to-mesh script.
-
-LPIPS_V also needs two torch hub models (`$TORCH_HOME`):
-```sh
 python -c "import lpips, torch; lpips.LPIPS(net='alex'); torch.hub.load('facebookresearch/dinov2', 'dinov2_vitl14_reg')"
 ```
+*   **DINOv3**: encodes the condition image.
+*   **TRELLIS.2-4B**, **RMBG-2.0**: second-stage meshing and background removal, used only by Image to Mesh.
+*   **LPIPS**, **DINOv2**: used only by the evaluation.
+
+All of them are read from the local caches (`$HF_HOME` and `$TORCH_HOME`), so a machine without internet access
+can use copies downloaded elsewhere.
 
 
 ## 🚀 Usage
 
 ### 1. Image to Mesh
+Run the three stages on a folder of images:
 ```sh
-# 1. background removal and centering (TRELLIS.2 environment)
-python scripts/img2mesh.py --stage prep --in_dir <images> --out <out>
-# 2. 64³ voxel structure (this environment)
-python scripts/img2mesh.py --stage voxel --out <out> --seed 0
-# 3. mesh from TRELLIS.2's second stage (TRELLIS.2 environment)
-python scripts/img2mesh.py --stage mesh --out <out> --seed 0
+python scripts/img2mesh.py --stage prep  --in_dir <images> --out <out>   # TRELLIS.2 environment
+python scripts/img2mesh.py --stage voxel --out <out> --seed 0             # this environment
+python scripts/img2mesh.py --stage mesh  --out <out> --seed 0             # TRELLIS.2 environment
 ```
-Outputs in `<out>`:
-*   `prep/`: centered RGBA images (`--fill` sets how much of the canvas the object covers)
-*   `voxels/`: generated structures
-*   `mesh/`: one `.ply` per image
+*   `prep` removes the background and centers the object. `--fill` sets how much of the image the object covers.
+*   `voxel` generates the 64³ structure.
+*   `mesh` turns the structure into a mesh with the second stage of TRELLIS.2.
+
+The results are in `<out>/prep/` (centered images), `<out>/voxels/` (structures) and `<out>/mesh/` (one `.ply` per image).
 
 ### 2. Evaluation
-Each generated structure is compared with the ground truth of the same object by CD_V, IoU and LPIPS_V.
-All files are under `data/`.
+Compare generated structures with the ground truth of the same objects by CD_V, IoU and LPIPS_V.
 
-1. **Condition list.** `data/splits/eval_cond.csv`, one row per object, with columns `split,subset,uid,image_path,seed`.
-   `split` is `test`, `image_path` is one condition image under `data/renders/<subset>/renders3/<uid>/`,
-   and `seed` is the sampling seed. We used 1000 Toys4k objects.
-2. **Ground truth.** Name the meshes `<uid>.glb` in one directory, then run:
+1. Write the list of test objects to `data/splits/eval_cond.csv`, one row per object:
+
+    | Column | Content |
+    | :--- | :--- |
+    | `split` | always `test` |
+    | `subset`, `uid` | the object |
+    | `image_path` | its condition image, under `data/renders/<subset>/renders3/<uid>/` |
+    | `seed` | sampling seed |
+
+2. Put the ground-truth meshes in one folder as `<uid>.glb`, and voxelize and render them:
     ```sh
-    python scripts/voxelize_gt.py --dataset toys4k --src <mesh dir>
+    python scripts/voxelize_gt.py --dataset toys4k --src <mesh folder>
     python scripts/render_gt.py --dataset toys4k --method gt
     ```
-    This writes the voxels and the LPIPS_V renderings to `data/gen/toys4k/gt/`.
-3. **Generate.**
+
+3. Generate one structure per object:
     ```sh
     python scripts/generate.py --spec voxelgen64 --dataset toys4k
     ```
-    Keep the default batch of 8 (`--batch`) to reproduce our numbers. Batch composition slightly changes the samples.
-4. **Metrics.**
+
+4. Compute the metrics:
     ```sh
     python scripts/evaluate.py --dataset toys4k --method voxelgen64 --compute_missing
     ```
-    Results go to `data/gen/toys4k/voxelgen64/released/eval/toys4k/`.
-    In `core.json`, `result.cd_p24_sum` is CD_V and `result.iou64` … `result.iou8` are the IoUs. `core.csv` lists every object.
-    In `vis_pair.json`, `vis_pair.lpips` is LPIPS_V.
 
-Add `--n N` to steps 3 and 4 to use only the first N rows.
+The metrics are written to `data/gen/toys4k/voxelgen64/released/eval/toys4k/`:
+*   `core.json`: `result.cd_p24_sum` is CD_V, `result.iou64` to `result.iou8` are the IoUs at 64³ to 8³
+*   `core.csv`: the same metrics for every object
+*   `vis_pair.json`: `vis_pair.lpips` is LPIPS_V
+
+> To reproduce our numbers, keep the default `--batch 8` in step 3: the objects of one batch share one random seed,
+> so a different batch size gives slightly different samples. Add `--n N` to steps 3 and 4 to use only the first N objects.
 
 
 ## 🏋 Training
 
 ### 1. Data Preparation
-Training reads 64³ occupancy and condition images of TRELLIS-500K objects:
-```
-$PROJECT_DATA/TRELLIS-500K-blender/<subset>/voxels/<uid>.vxz     64³ occupancy, Blender frame (Z up)
-$PROJECT_DATA/TRELLIS-500K-blender/splits/train.csv              columns subset,uid
-$PROJECT_DATA/TRELLIS-500K-blender/splits/test.csv               columns subset,uid
-$VFM_IMAGE_ROOT/<subset>/renders3/<uid>/*.png                    RGBA condition images
-$VFM_IMAGE_ROOT/<subset>/renders3/<uid>/transforms.json          camera poses (optional)
-```
-`PROJECT_DATA` defaults to `./data` and `VFM_IMAGE_ROOT` to `./data/TRELLIS-500K`.
-With `transforms.json`, condition images come from views with elevation in [−10°, 30°]. Without it, all views are used.
-We trained on the sketchfab, 3D-FUTURE, HSSD and ABO subsets and kept Toys4k for testing.
-The condition images of each object are RGBA renderings stored in `$VFM_IMAGE_ROOT/<subset>/renders3/<uid>/`.
+Training reads, for each object, its occupancy and its condition images. We trained on the sketchfab, 3D-FUTURE,
+HSSD and ABO subsets of TRELLIS-500K and kept Toys4k for testing.
 
-The occupancy files are made from meshes in two steps. The subset directory needs the `metadata.csv` of the
-TRELLIS.2 data toolkit, with columns `sha256` and `local_path` (absolute, or relative to the working directory):
+| Path | Content |
+| :--- | :--- |
+| `$PROJECT_DATA/TRELLIS-500K-blender/<subset>/voxels/<uid>.vxz` | 64³ occupancy |
+| `$PROJECT_DATA/TRELLIS-500K-blender/splits/{train,test}.csv` | objects of each split (columns `subset,uid`) |
+| `$VFM_IMAGE_ROOT/<subset>/renders3/<uid>/*.png` | condition images (RGBA) |
+| `$VFM_IMAGE_ROOT/<subset>/renders3/<uid>/transforms.json` | camera poses (optional) |
+
+`PROJECT_DATA` defaults to `./data` and `VFM_IMAGE_ROOT` to `./data/TRELLIS-500K`.
+If `transforms.json` is present, conditions are drawn from views with an elevation between −10° and 30° when there are any.
+
+The occupancy is made from the meshes in two steps:
 ```sh
 python scripts/voxelize_meshes.py --root <raw>/<subset> --max_workers 8
 python scripts/to_blender_frame.py --src_root <raw>/<subset> --dst_root $PROJECT_DATA/TRELLIS-500K-blender/<subset>
 ```
-The first step voxelizes each normalized mesh at 512³ and writes 512³ and 64³ occupancy in the glTF frame (Y up).
-The second rotates both into the Blender frame of the condition renderings. Both accept `--rank/--world_size` for sharding.
+*   `voxelize_meshes.py` voxelizes every mesh listed in `<raw>/<subset>/metadata.csv` (the file the
+    TRELLIS.2 data toolkit writes) at 512³ and 64³.
+*   `to_blender_frame.py` rotates the result from Y-up to Z-up, the orientation of the condition images.
+*   Both accept `--rank` and `--world_size` to split the work over several jobs.
 
 ### 2. Running Training
 ```sh
 accelerate launch --config_file configs/accelerate-train.yaml scripts/train.py --config configs/voxelgen64.yaml
 ```
-The configuration uses 4 GPUs × 64 objects (global batch 256) for 328,400 steps: 10,000 warmup steps, cosine decay,
-and a final cosine anneal to 1e-6 over the last 8,400 steps. Any value can be overridden on the command line:
-*   `model.num_levels`: 2 for 64³ (4³ → 16³ → 64³), 3 for 256³ (one more level, read from `<subset>/dual_grid_512/` and max-pooled to 256³).
-*   `model.global_infer_root_end`: one window end per level except the last, e.g. `[0.8]` or `[0.6, 0.8]`.
-*   `train.batch_size`, `train.accum_steps`: per-GPU batch and gradient accumulation.
-*   `logger.trackers`: `[tensorboard]` by default. Add `wandb` and set `logger.wandb.entity` to log to Weights & Biases.
+The default configuration trains for 328,400 steps on 4 GPUs with 64 objects per GPU.
+Any value can be changed on the command line, for example `train.batch_size=32`. The ones you are most likely to change:
+*   `train.batch_size`: objects per GPU. Keep `batch_size × number of GPUs × train.accum_steps` at 256 to keep our schedule.
+*   `model.num_levels`: number of levels. `2` generates 64³; `3` adds one level and generates 256³ from the
+    512³ occupancy (`<subset>/dual_grid_512/`). With `3`, also set `model.global_infer_root_end=[0.6,0.8]`
+    (the fractions of sampling after which the two coarser levels are complete).
+*   `logger.trackers`: `[tensorboard]` by default. Use `[tensorboard,wandb]` with `logger.wandb.entity=<entity>` to also log to Weights & Biases.
 
-Checkpoints go to `exps/checkpoints/voxelgen/voxel_fm_64/<step>/` and logs to `exps/trackers`.
-Training resumes from the latest checkpoint automatically.
+Checkpoints are saved to `exps/checkpoints/voxelgen/voxel_fm_64/<step>/`, and training resumes from the latest one.
 
-To use your own checkpoint, pass the spec `voxelgen64_trained` with `--step`:
+### 3. Using Your Checkpoint
+Pass `--spec voxelgen64_trained --step <step>` instead of `--spec voxelgen64`:
 ```sh
 python scripts/generate.py --spec voxelgen64_trained --step 328400 --dataset toys4k
-python scripts/evaluate.py --dataset toys4k --method voxelgen64_trained --step 328400 --compute_missing
 python scripts/img2mesh.py --stage voxel --out <out> --spec voxelgen64_trained --step 328400
 ```
+For evaluation, use `--method voxelgen64_trained --step 328400`.
 
 
 ## 🧩 Related Packages
@@ -206,7 +215,7 @@ python scripts/img2mesh.py --stage voxel --out <out> --spec voxelgen64_trained -
 
 The code is released under the **[Apache-2.0 License](LICENSE)**.
 
-The training code builds on [OpenLRM](https://github.com/3DTopia/OpenLRM) (Apache-2.0, see `LICENSE`).
+The training code builds on [OpenLRM](https://github.com/3DTopia/OpenLRM) (Apache-2.0).
 `voxelgen/network/backbone.py` and the image encoder in `voxelgen/network/model.py` build on
 [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) (MIT).
 [DINOv3](https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m) and [RMBG-2.0](https://huggingface.co/briaai/RMBG-2.0)
