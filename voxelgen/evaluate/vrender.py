@@ -137,11 +137,14 @@ def root_names(root):
 def main():
     from . import contract as GC
     from .eval_voxels import load_root
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    GC.add_identity_args(ap, ref=False)
-    ap.add_argument("--rank", type=int, default=0); ap.add_argument("--world_size", type=int, default=1)
+    ap = argparse.ArgumentParser(description="Render the ground-truth voxels from 6 views (used by LPIPS_V and DINO_V).")
+    ap.add_argument("--dataset", required=True, choices=sorted(GC.DATASETS),
+                    help="name of the evaluation set; renders data/gen/<dataset>/gt/")
+    ap.add_argument("--rank", type=int, default=0, help="index of this job when the work is split over several jobs")
+    ap.add_argument("--world_size", type=int, default=1, help="number of jobs the work is split over")
     a = ap.parse_args()
-    a.root, _, _ = GC.resolve(a)
+    a.root = GC.gt_of(a.dataset)
+    assert os.path.isdir(a.root), f"ground truth not found: {a.root} (run scripts/voxelize_gt.py first)"
     a.up = GC.UP_AXIS
     print(f"[vrender] root {a.root}  up axis = {a.up}", flush=True)
     names, coords = load_root(a.root)

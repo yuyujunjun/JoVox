@@ -119,16 +119,16 @@ def refuse_duplicate(found, root, ref_dataset):
 
 def main():
     from .contract import add_identity_args, resolve, eval_dir, cond_rows, UP_AXIS as up
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    add_identity_args(ap, ref=True)
+    ap = argparse.ArgumentParser(description="Compare generated structures with the ground truth by CD_V, IoU, LPIPS_V and DINO_V.")
+    add_identity_args(ap)
     ap.add_argument("--metrics", default=None,
-                    help=f"comma-separated subset of {','.join(METRICS)}; default: all. core = CD_V / IoU")
-    ap.add_argument("--device", default="cuda")
-    ap.add_argument("--batch", type=int, default=32, help="affects memory and speed only")
+                    help="core (CD_V, IoU), vis_pair (LPIPS_V, DINO_V), or both comma-separated (default)")
+    ap.add_argument("--device", default="cuda", help="torch device")
+    ap.add_argument("--batch", type=int, default=32, help="objects per batch for CD_V / IoU, changes only memory and speed")
     ap.add_argument("--overwrite", action="store_true",
-                    help="recompute and replace existing results")
+                    help="recompute metrics that already exist (otherwise the script stops)")
     ap.add_argument("--compute_missing", action="store_true",
-                    help="compute missing reference DINOv2 features for vis_pair (dino_renders6_vox.npz)")
+                    help="compute the ground-truth DINOv2 features for DINO_V if they are not cached yet (needed on the first run)")
     a = ap.parse_args()
     subset_n = a.n if (a.n and a.method == "gt") else None
     if subset_n:
@@ -176,7 +176,7 @@ def main():
         "gen_manifest_sha256": _sha256(os.path.join(a.gen, "manifest.csv")),
         "ref_manifest_sha256": _sha256(os.path.join(a.ref, "manifest.csv")),
         "gen_names_first3": gen_names[:3], "ref_names_first3": ref_names[:3],
-        "identity": {"dataset": a.dataset, "method": a.method, "step": a.step, "gen_seed": a.gen_seed,
+        "identity": {"dataset": a.dataset, "method": a.method, "step": a.step,
                      "n": subset_n or a.n, "subset_of_full_root": bool(subset_n), "ref": ref_ds},
         "metrics": metrics, "up": up, "compute_missing": a.compute_missing, "overwrite": a.overwrite,
         "eval_script_md5": hashlib.md5(open(__file__, "rb").read()).hexdigest(),

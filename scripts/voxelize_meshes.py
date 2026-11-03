@@ -110,11 +110,11 @@ if __name__ == '__main__':
     parser.add_argument('--root', type=str, required=True,
                         help='subset root directory containing metadata.csv')
     parser.add_argument('--instances', type=str, default=None,
-                        help='only these sha256 ids (a file, or comma-separated)')
-    parser.add_argument('--resolution', type=str, default='512,64')
-    parser.add_argument('--rank', type=int, default=0)
-    parser.add_argument('--world_size', type=int, default=1)
-    parser.add_argument('--max_workers', type=int, default=8)
+                        help='voxelize only these sha256 ids (a file with one per line, or comma-separated)')
+    parser.add_argument('--resolution', type=str, default='512,64', help='resolutions to write, the first must be 512')
+    parser.add_argument('--rank', type=int, default=0, help='index of this job when the work is split over several jobs')
+    parser.add_argument('--world_size', type=int, default=1, help='number of jobs the work is split over')
+    parser.add_argument('--max_workers', type=int, default=8, help='meshes processed in parallel')
     opt = parser.parse_args()
     opt = edict(vars(opt))
     opt.resolution = sorted([int(x) for x in opt.resolution.split(',')], reverse=True)

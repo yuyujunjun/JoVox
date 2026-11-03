@@ -86,12 +86,12 @@ def convert_tree(src_root: str, dst_root: str, max_workers: int = 8,
 
 if __name__ == "__main__":
     import argparse
-    p = argparse.ArgumentParser(description="convert .vxz occupancy from the glTF frame (Y-up) to the Blender frame (Z-up)")
+    p = argparse.ArgumentParser(description="Rotate the occupancy written by voxelize_meshes.py from Y-up to Z-up, the orientation of the condition images.")
     p.add_argument("--src_root", required=True, help="subset directory containing dual_grid_512/ and voxels/")
     p.add_argument("--dst_root", required=True, help="output directory (must differ from --src_root)")
-    p.add_argument("--rank", type=int, default=0)
-    p.add_argument("--world_size", type=int, default=1)
-    p.add_argument("--max_workers", type=int, default=8)
+    p.add_argument("--rank", type=int, default=0, help="index of this job when the work is split over several jobs")
+    p.add_argument("--world_size", type=int, default=1, help="number of jobs the work is split over")
+    p.add_argument("--max_workers", type=int, default=8, help="files processed in parallel")
     a = p.parse_args()
     assert os.path.abspath(a.src_root) != os.path.abspath(a.dst_root), \
         "--dst_root must differ from --src_root: converting in place twice would rotate by 180 degrees"

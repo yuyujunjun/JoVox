@@ -47,8 +47,10 @@ logger = get_logger(__name__)
 
 
 def parse_configs():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, required=True)
+    parser = argparse.ArgumentParser(
+        description="Train the generator. Any configuration value can be overridden after the options as key=value, "
+                    "e.g. train.batch_size=32.")
+    parser.add_argument('--config', type=str, required=True, help="configuration file, e.g. configs/voxelgen64.yaml")
     args, unknown = parser.parse_known_args()
     return OmegaConf.merge(OmegaConf.load(args.config), OmegaConf.from_cli(unknown))
 

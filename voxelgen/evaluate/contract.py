@@ -192,22 +192,21 @@ def cond_rows(ds):
     return rows
 
 
-def leaf_of(method, step=None, gen_seed=None, n=None):
+def leaf_of(method, step=None, n=None):
     if method == "gt":
-        assert step is None and gen_seed is None and n is None, "gt takes no --step / --gen_seed / --n"
+        assert step is None and n is None, "gt takes no --step / --n"
         return ""
     if step is None:
-        assert gen_seed is None, f"{method}: --gen_seed requires --step"
         return "released" + (f"_n{n}" if n else "")
-    return f"s{int(step):06d}" + (f"_seed{gen_seed}" if gen_seed is not None else "") + (f"_n{n}" if n else "")
+    return f"s{int(step):06d}" + (f"_n{n}" if n else "")
 
 
-def root_of(dataset, method, step=None, gen_seed=None, n=None):
+def root_of(dataset, method, step=None, n=None):
     assert dataset in DATASETS, f"dataset must be one of {sorted(DATASETS)}, got {dataset!r}"
     if n is not None:
         size = len(cond_rows(dataset))
         assert 0 < n < size, f"--n {n} must be in (0, {size})"
-    leaf = leaf_of(method, step, gen_seed, n)
+    leaf = leaf_of(method, step, n)
     if method == "gt":
         return os.path.join(GEN, dataset, "gt")
     return os.path.join(GEN, dataset, method, leaf)
@@ -222,20 +221,18 @@ def eval_dir(root, ref_dataset):
     return os.path.join(root, "eval", ref_dataset)
 
 
-def add_identity_args(ap, ref=True):
-    ap.add_argument("--dataset", required=True, choices=sorted(DATASETS), help="evaluation dataset")
+def add_identity_args(ap):
+    ap.add_argument("--dataset", required=True, choices=sorted(DATASETS),
+                    help="name of the evaluation set; its objects are listed in data/splits/eval_cond.csv")
     ap.add_argument("--method", required=True,
-                    help="gt, or a model spec name")
-    ap.add_argument("--step", type=int, default=None, help="checkpoint step (model specs only)")
-    ap.add_argument("--gen_seed", type=int, default=None, help="generation seed (model specs only)")
-    ap.add_argument("--n", type=int, default=None, help="use the first N entries of the dataset")
-    if ref:
-        ap.add_argument("--ref", default=None, choices=sorted(DATASETS), help="reference dataset (default: --dataset)")
+                    help="gt for the ground truth, or the --spec given to generate.py")
+    ap.add_argument("--step", type=int, default=None, help="checkpoint step, only with voxelgen64_trained")
+    ap.add_argument("--n", type=int, default=None, help="use only the first N objects of the list")
 
 
 def resolve(a, must_exist=True):
-    root = root_of(a.dataset, a.method, a.step, a.gen_seed, a.n)
-    ref = getattr(a, "ref", None) or a.dataset
+    root = root_of(a.dataset, a.method, a.step, a.n)
+    ref = a.dataset
     print(f"[data] {GEN}", flush=True)
     if must_exist and not os.path.isdir(root):
         d = os.path.join(GEN, a.dataset)
