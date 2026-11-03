@@ -88,10 +88,10 @@ Three steps: background removal, structure generation, and meshing with the seco
 
 Download it together with the models that the code uses:
 ```sh
-huggingface-cli download {{HF_REPO}} model.safetensors --local-dir checkpoints/voxelgen64
-huggingface-cli download facebook/dinov3-vitl16-pretrain-lvd1689m        # gated: accept the license on its page first
-huggingface-cli download microsoft/TRELLIS.2-4B --revision af44b45f2e35a493886929c6d786e563ec68364d
-huggingface-cli download briaai/RMBG-2.0                                 # gated: accept the license on its page first
+hf download {{HF_REPO}} model.safetensors --local-dir checkpoints/voxelgen64
+hf download facebook/dinov3-vitl16-pretrain-lvd1689m        # gated: accept the license on its page first
+hf download microsoft/TRELLIS.2-4B --revision af44b45f2e35a493886929c6d786e563ec68364d
+hf download briaai/RMBG-2.0                                 # gated: accept the license on its page first
 python -c "import lpips, torch; lpips.LPIPS(net='alex'); torch.hub.load('facebookresearch/dinov2', 'dinov2_vitl14_reg')"
 ```
 *   **DINOv3**: encodes the condition image.
