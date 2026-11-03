@@ -187,7 +187,7 @@ accelerate launch --config_file configs/accelerate-train.yaml scripts/train.py -
 The default configuration trains for 328,400 steps on 4 GPUs with 64 objects per GPU.
 Any value can be changed on the command line, for example `train.batch_size=32`. The ones you are most likely to change:
 *   `train.batch_size`: objects per GPU. Keep `batch_size × number of GPUs × train.accum_steps` at 256 to keep our schedule.
-*   `model.num_levels`: number of levels. `2` generates 64³; `3` adds one level and generates 256³ from the
+*   `model.num_levels`: number of levels. `2` generates 64³, and `3` adds one level and generates 256³ from the
     512³ occupancy (`<subset>/dual_grid_512/`). With `3`, also set `model.global_infer_root_end=[0.6,0.8]`
     (the fractions of sampling after which the two coarser levels are complete).
 *   `logger.trackers`: `[tensorboard]` by default. Use `[tensorboard,wandb]` with `logger.wandb.entity=<entity>` to also log to Weights & Biases.
