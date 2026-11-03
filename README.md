@@ -1,7 +1,7 @@
 # <img src="assets/jovox_logo.svg" height="44" align="top" alt="JoVox logo"> JoVox: Joint Hierarchical Flow Matching for Lightweight Voxel Generation
 
 <a href="{{PAPER_URL}}"><img src="https://img.shields.io/badge/Paper-Arxiv-b31b1b.svg" alt="Paper"></a>
-<a href="https://huggingface.co/{{HF_REPO}}"><img src="https://img.shields.io/badge/Hugging%20Face-Model-yellow" alt="Hugging Face"></a>
+<a href="https://huggingface.co/xiangjuntang/JoVox-64"><img src="https://img.shields.io/badge/Hugging%20Face-Model-yellow" alt="Hugging Face"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-green" alt="License"></a>
 
 <table>
@@ -84,11 +84,11 @@ Three steps: background removal, structure generation, and meshing with the seco
 
 | Model | Resolution | Link |
 | :--- | :--- | :--- |
-| **JoVox** | 64³ | [Hugging Face](https://huggingface.co/{{HF_REPO}}) |
+| **JoVox-64** | 64³ | [Hugging Face](https://huggingface.co/xiangjuntang/JoVox-64) |
 
 Download it together with the models that the code uses:
 ```sh
-hf download {{HF_REPO}} model.safetensors --local-dir checkpoints/voxelgen64
+hf download xiangjuntang/JoVox-64 model.safetensors --local-dir checkpoints/voxelgen64
 hf download facebook/dinov3-vitl16-pretrain-lvd1689m        # gated: accept the license on its page first
 hf download microsoft/TRELLIS.2-4B --revision af44b45f2e35a493886929c6d786e563ec68364d
 hf download briaai/RMBG-2.0                                 # gated: accept the license on its page first
