@@ -1,0 +1,49 @@
+experiment: {seed: 42, parent: voxelgen, child: voxel_fm_64}
+model:
+  fm_model_channels: 1536
+  fm_num_blocks: 30
+  fm_num_heads: 12
+  fm_use_checkpoint: true
+  fm_cond_channels: 1024
+  point_embed_freqs: 10
+  global_schedule: {power: 2.0, root_end_center: 0.8, root_end_lo: 0.6, root_end_hi: 1.0,
+    root_end_point_mass: 0.5, steps_lo: 36, steps_hi: 108, cleanup_steps: 8, remask_steps: 1}
+  global_infer_root_end: [0.8]
+  num_levels: 2
+sampling: {steps: 72, cfg_strength: 1.5, temperature: 0.0}
+dataset:
+  root: ${oc.env:PROJECT_DATA,./data}/TRELLIS-500K-blender
+  splits: {train: '${oc.env:PROJECT_DATA,./data}/TRELLIS-500K-blender/splits/train.csv',
+    val: '${oc.env:PROJECT_DATA,./data}/TRELLIS-500K-blender/splits/test.csv'}
+  image_root: ${oc.env:VFM_IMAGE_ROOT,./data/TRELLIS-500K}
+  num_train_workers: 6
+  num_val_workers: 2
+  pin_mem: true
+train:
+  mixed_precision: bf16
+  dist_timeout_s: 5400
+  find_unused_parameters: false
+  optim: {lr: 2e-4, weight_decay: 0.0, beta1: 0.9, beta2: 0.99, clip_grad_norm: 1.0}
+  ema_decay: 0.9999
+  scheduler:
+    warmup_real_iters: 10000
+    decay_iters: 108900
+    min_lr: 0.0001
+    final_anneal: {start: 320000, steps: 8400, min_lr: 1.0e-06}
+  batch_size: 64
+  accum_steps: 1
+  epochs: 1172
+  max_steps: 328400
+val:
+  batch_size: 1
+  global_step_period: 500
+saver: {auto_resume: true, checkpoint_root: ./exps/checkpoints, checkpoint_global_steps: 1000,
+  checkpoint_keep_level: 4, remove_checkpoint: true}
+logger:
+  stream_level: WARNING
+  log_level: INFO
+  log_root: ./exps/logs
+  tracker_root: ./exps/trackers
+  enable_profiler: false
+  trackers: [tensorboard]
+  wandb: {project: voxelgen, entity: null}

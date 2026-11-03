@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/
+exps/
+checkpoints/
+hf_cache/
+third_party/
