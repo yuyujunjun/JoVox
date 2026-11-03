@@ -1,12 +1,19 @@
-<p align="center"><img src="assets/jovox_logo.svg" width="220" alt="JoVox logo"></p>
-
-# JoVox: Joint Hierarchical Flow Matching for Lightweight Voxel Generation
+# <img src="assets/jovox_logo.svg" height="44" align="top" alt="JoVox logo"> JoVox: Joint Hierarchical Flow Matching for Lightweight Voxel Generation
 
 <a href="{{PAPER_URL}}"><img src="https://img.shields.io/badge/Paper-Arxiv-b31b1b.svg" alt="Paper"></a>
 <a href="https://huggingface.co/{{HF_REPO}}"><img src="https://img.shields.io/badge/Hugging%20Face-Model-yellow" alt="Hugging Face"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-{{LICENSE_BADGE}}-green" alt="License"></a>
 
-<p align="center"><img src="assets/teaser.webp" width="420" alt="JoVox generates all levels jointly"></p>
+<table>
+  <tr>
+    <td align="center"><b>Level by level</b></td>
+    <td align="center"><b>JoVox: all levels jointly</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/level_by_level.webp" width="380" alt="Level-by-level generation"></td>
+    <td><img src="assets/ours.webp" width="380" alt="JoVox generates all levels jointly"></td>
+  </tr>
+</table>
 
 **JoVox** is a discrete flow matching framework that learns the **joint hierarchical distribution** of voxels while keeping generation lightweight.
 This repository releases the image-conditioned **64³** generator with its training, sampling and evaluation code.
