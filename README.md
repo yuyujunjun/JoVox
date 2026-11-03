@@ -150,8 +150,7 @@ The metrics are written to `data/gen/toys4k/voxelgen64/released/eval/toys4k/`:
 *   `core.csv`: the same metrics for every object
 *   `vis_pair.json`: `vis_pair.lpips` is LPIPS_V
 
-> To reproduce our numbers, keep the default `--batch 8` in step 3: the objects of one batch share one random seed,
-> so a different batch size gives slightly different samples. Add `--n N` to steps 3 and 4 to use only the first N objects.
+Add `--n N` to steps 3 and 4 to use only the first N objects.
 
 
 ## 🏋 Training
