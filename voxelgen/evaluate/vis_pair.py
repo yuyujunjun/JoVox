@@ -8,7 +8,7 @@ import numpy as np
 GT_DINO = "dino_renders6_vox.npz"
 
 
-def run_vis_pair(gen_names, gen, ref_names, ref, ref_root, up, device="cuda", batch=16, compute_missing=False):
+def run_vis_pair(gen_names, gen, ref_names, ref, ref_root, up, device="cuda", batch=16, compute_gt_dino=False):
     import nvdiffrast.torch as dr
     import torch
     from PIL import Image
@@ -27,8 +27,9 @@ def run_vis_pair(gen_names, gen, ref_names, ref, ref_root, up, device="cuda", ba
     gt_dino = dict(np.load(gpath)) if os.path.exists(gpath) else {}
     need = [n for n in gen_names if n not in gt_dino]
     if need:
-        if not compute_missing:
-            raise SystemExit(f"[cache] {len(need)} reference DINOv2 features missing ({gpath}); use --compute_missing")
+        if not compute_gt_dino:
+            raise SystemExit(f"[cache] {len(need)} ground-truth DINOv2 features are not cached yet ({gpath}); "
+                             f"add --compute_gt_dino to compute them")
         views = [os.path.join(ref_root, RDIR, n, f"{v:03d}.png") for n in need for v in range(N_VIEWS)]
         miss = [p for p in views if not os.path.exists(p)]
         assert not miss, f"{len(miss)} reference renders missing, first 3: {miss[:3]}"

@@ -127,8 +127,9 @@ def main():
     ap.add_argument("--batch", type=int, default=32, help="objects per batch for CD_V / IoU, changes only memory and speed")
     ap.add_argument("--overwrite", action="store_true",
                     help="recompute metrics that already exist (otherwise the script stops)")
-    ap.add_argument("--compute_missing", action="store_true",
-                    help="compute the ground-truth DINOv2 features for DINO_V if they are not cached yet (needed on the first run)")
+    ap.add_argument("--compute_gt_dino", action="store_true",
+                    help="compute and cache the ground-truth DINOv2 features used by DINO_V "
+                         "(needed the first time a ground truth is evaluated)")
     a = ap.parse_args()
     subset_n = a.n if (a.n and a.method == "gt") else None
     if subset_n:
@@ -150,7 +151,7 @@ def main():
         print(f"[exists] --overwrite: recomputing {sorted({m for m, *_ in dup})}", flush=True)
     print(f"[cfg] root {root}\n[cfg] reference {gt}  results -> {outdir}/<metric>.json\n"
           f"[cfg] paired with {ref_ds}  up axis {up}  metrics {metrics}"
-          f"  missing features: {'compute' if a.compute_missing else 'error'}", flush=True)
+          f"  uncached ground-truth DINOv2 features: {'compute' if a.compute_gt_dino else 'error'}", flush=True)
 
     t0 = time.time()
     gen_names, gen = load_root(a.gen)
@@ -178,7 +179,7 @@ def main():
         "gen_names_first3": gen_names[:3], "ref_names_first3": ref_names[:3],
         "identity": {"dataset": a.dataset, "method": a.method, "step": a.step,
                      "n": subset_n or a.n, "subset_of_full_root": bool(subset_n), "ref": ref_ds},
-        "metrics": metrics, "up": up, "compute_missing": a.compute_missing, "overwrite": a.overwrite,
+        "metrics": metrics, "up": up, "compute_gt_dino": a.compute_gt_dino, "overwrite": a.overwrite,
         "eval_script_md5": hashlib.md5(open(__file__, "rb").read()).hexdigest(),
         "time": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -212,7 +213,7 @@ def main():
         from .vis_pair import run_vis_pair
         t1 = time.time()
         vp, vrows = run_vis_pair(gen_names, gen, ref_names, ref, a.ref, up, a.device,
-                                  compute_missing=a.compute_missing)
+                                  compute_gt_dino=a.compute_gt_dino)
         vcsv = os.path.join(outdir, f"vis_pair{sfx}.csv")
         os.makedirs(outdir, exist_ok=True)
         with open(vcsv + ".tmp", "w", newline="") as f:
