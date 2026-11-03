@@ -2,7 +2,7 @@
 
 <a href="{{PAPER_URL}}"><img src="https://img.shields.io/badge/Paper-Arxiv-b31b1b.svg" alt="Paper"></a>
 <a href="https://huggingface.co/{{HF_REPO}}"><img src="https://img.shields.io/badge/Hugging%20Face-Model-yellow" alt="Hugging Face"></a>
-<a href="LICENSE"><img src="https://img.shields.io/badge/License-{{LICENSE_BADGE}}-green" alt="License"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-green" alt="License"></a>
 
 <table>
   <tr>
@@ -204,7 +204,7 @@ python scripts/img2mesh.py --stage voxel --out <out> --spec voxelgen64_trained -
 
 ## ⚖ License
 
-{{LICENSE_OF_THIS_REPOSITORY}}
+The code is released under the **[Apache-2.0 License](LICENSE)**.
 
 The training code builds on [OpenLRM](https://github.com/3DTopia/OpenLRM) (Apache-2.0, see `LICENSE`).
 `voxelgen/network/backbone.py` and the image encoder in `voxelgen/network/model.py` build on
