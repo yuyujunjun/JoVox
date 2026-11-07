@@ -51,8 +51,6 @@ Three steps: background removal, structure generation, and meshing with the seco
 - **Software**: [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit-archive) 12.4, [Conda](https://docs.anaconda.com/miniconda/install/#quick-command-line-install), Python 3.10, PyTorch 2.6.0.
 
 ### Installation Steps
-Everything, including the TRELLIS.2 stages of Image to Mesh, runs in one environment.
-
 1. Clone the repo and create the environment:
     ```sh
     git clone https://github.com/yuyujunjun/JoVox.git
