@@ -51,20 +51,22 @@ Three steps: background removal, structure generation, and meshing with the seco
 - **Software**: [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit-archive) 12.4, [Conda](https://docs.anaconda.com/miniconda/install/#quick-command-line-install), Python 3.10, PyTorch 2.6.0.
 
 ### Installation Steps
+Everything, including the TRELLIS.2 stages of Image to Mesh, runs in one environment.
+
 1. Clone the repo and create the environment:
     ```sh
     git clone https://github.com/yuyujunjun/JoVox.git
     cd JoVox
     conda create -n jovox python=3.10 -y && conda activate jovox
     pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
-    pip install -r requirements.txt
     ```
 
-2. Clone [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) into `third_party/TRELLIS.2`, and install `flex_gemm`, `cumesh`,
-   `nvdiffrast`, `utils3d` and `flash-attn` with its `setup.sh`:
+2. Clone [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) into `third_party/TRELLIS.2` and install its dependencies
+   into the same environment:
     ```sh
     git clone --recursive https://github.com/microsoft/TRELLIS.2.git third_party/TRELLIS.2
     git -C third_party/TRELLIS.2 checkout 5565d24
+    cd third_party/TRELLIS.2 && . ./setup.sh --basic --flash-attn --nvdiffrast --cumesh --flexgemm && cd ../..
     ```
 
 3. Install [o-voxel-gpu](https://github.com/yuyujunjun/o-voxel-gpu) in place of the `o_voxel` that TRELLIS.2 ships:
@@ -74,10 +76,12 @@ Three steps: background removal, structure generation, and meshing with the seco
     pip install ./o-voxel-gpu --no-build-isolation
     ```
 
-4. For evaluation only, install [PyTorch3D](https://github.com/facebookresearch/pytorch3d) (0.7.9 tested).
+4. Install the remaining dependencies:
+    ```sh
+    pip install -r requirements.txt
+    ```
 
-> The `prep` and `mesh` stages of [Image to Mesh](#2-image-to-mesh) run in a second environment set up by the
-> TRELLIS.2 README, with o-voxel-gpu from step 3.
+5. For evaluation only, install [PyTorch3D](https://github.com/facebookresearch/pytorch3d) (0.7.9 tested).
 
 
 ## 📦 Pretrained Weights
@@ -109,17 +113,17 @@ can use copies downloaded elsewhere.
 so they skip the `prep` stage and go straight to `prep/`:
 ```sh
 mkdir -p outputs/examples/prep && cp assets/examples/*.png outputs/examples/prep/
-python scripts/img2mesh.py --stage voxel --out outputs/examples --seed 0   # this environment
-python scripts/img2mesh.py --stage mesh  --out outputs/examples --seed 0   # TRELLIS.2 environment
+python scripts/img2mesh.py --stage voxel --out outputs/examples --seed 0
+python scripts/img2mesh.py --stage mesh  --out outputs/examples --seed 0
 ```
 The meshes are written to `outputs/examples/mesh/`.
 
 ### 2. Image to Mesh
 Run the three stages on a folder of images:
 ```sh
-python scripts/img2mesh.py --stage prep  --in_dir <images> --out <out>   # TRELLIS.2 environment
-python scripts/img2mesh.py --stage voxel --out <out> --seed 0             # this environment
-python scripts/img2mesh.py --stage mesh  --out <out> --seed 0             # TRELLIS.2 environment
+python scripts/img2mesh.py --stage prep  --in_dir <images> --out <out>
+python scripts/img2mesh.py --stage voxel --out <out> --seed 0
+python scripts/img2mesh.py --stage mesh  --out <out> --seed 0
 ```
 The results are in `<out>/prep/` (centered images), `<out>/voxels/` (structures) and `<out>/mesh/` (one `.ply` per image).
 ```sh
