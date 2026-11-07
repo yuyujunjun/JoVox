@@ -105,11 +105,12 @@ can use copies downloaded elsewhere.
 ## 🚀 Usage
 
 ### 1. Quick Try
-`assets/examples/` holds eight condition images of Toys4k test objects. Run the image-to-mesh stages on them:
+`assets/examples/` holds eight condition images of Toys4k test objects. They already have a transparent background,
+so they skip the `prep` stage and go straight to `prep/`:
 ```sh
-python scripts/img2mesh.py --stage prep  --in_dir assets/examples --out outputs/examples   # TRELLIS.2 environment
-python scripts/img2mesh.py --stage voxel --out outputs/examples --seed 0                    # this environment
-python scripts/img2mesh.py --stage mesh  --out outputs/examples --seed 0                    # TRELLIS.2 environment
+mkdir -p outputs/examples/prep && cp assets/examples/*.png outputs/examples/prep/
+python scripts/img2mesh.py --stage voxel --out outputs/examples --seed 0   # this environment
+python scripts/img2mesh.py --stage mesh  --out outputs/examples --seed 0   # TRELLIS.2 environment
 ```
 The meshes are written to `outputs/examples/mesh/`.
 
