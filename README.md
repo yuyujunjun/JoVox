@@ -193,7 +193,7 @@ Options:
     --compute_gt_dino Compute and cache the ground-truth DINOv2 features used by DINO_V
                       (needed the first time a ground truth is evaluated)
     --overwrite       Recompute metrics that already exist (otherwise the script stops)
-    --batch           Objects per batch for CD_V and IoU; changes only memory and speed (default 32)
+    --batch           Objects per batch for CD_V and IoU, changes only memory and speed (default 32)
     --device          Torch device (default cuda)
 
 Usage: scripts/voxelize_gt.py --dataset DATASET --src SRC [--pattern PATTERN]
