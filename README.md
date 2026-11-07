@@ -60,12 +60,13 @@ Three steps: background removal, structure generation, and meshing with the seco
     ```
 
 2. Clone [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) into `third_party/TRELLIS.2` and install its dependencies
-   into the same environment:
+   into the same environment. Its `setup.sh` must run on a machine with an NVIDIA GPU.
     ```sh
     git clone --recursive https://github.com/microsoft/TRELLIS.2.git third_party/TRELLIS.2
     git -C third_party/TRELLIS.2 checkout 5565d24
     cd third_party/TRELLIS.2 && . ./setup.sh --basic --flash-attn --nvdiffrast --cumesh --flexgemm && cd ../..
     ```
+    `--basic` also tries `sudo apt install libjpeg-dev`. It is not needed here, so a failed `sudo` can be ignored.
 
 3. Install [o-voxel-gpu](https://github.com/yuyujunjun/o-voxel-gpu) in place of the `o_voxel` that TRELLIS.2 ships:
     ```sh
@@ -74,12 +75,16 @@ Three steps: background removal, structure generation, and meshing with the seco
     pip install ./o-voxel-gpu --no-build-isolation
     ```
 
-4. Install the remaining dependencies:
+4. Install the remaining dependencies. Run this after step 2, which installs other versions of some of them:
     ```sh
     pip install -r requirements.txt
     ```
 
-5. For evaluation only, install [PyTorch3D](https://github.com/facebookresearch/pytorch3d) (0.7.9 tested).
+5. Install [PyTorch3D](https://github.com/facebookresearch/pytorch3d), used by training and evaluation. It is built from
+   source on a machine with an NVIDIA GPU:
+    ```sh
+    pip install "git+https://github.com/facebookresearch/pytorch3d.git@v0.7.9" --no-build-isolation
+    ```
 
 
 ## 📦 Pretrained Weights
@@ -108,7 +113,7 @@ can use copies downloaded elsewhere.
 
 ### 1. Quick Try
 `assets/examples/` holds eight condition images of Toys4k test objects. They already have a transparent background,
-so they skip the `prep` stage and go straight to `prep/`:
+so instead of running the `prep` stage, copy them into `prep/`:
 ```sh
 mkdir -p outputs/examples/prep && cp assets/examples/*.png outputs/examples/prep/
 python scripts/img2mesh.py --stage voxel --out outputs/examples --seed 0
@@ -209,7 +214,7 @@ The metrics are written to `data/gen/toys4k/voxelgen64/released/eval/toys4k/`:
 *   `core.csv`: the same metrics for every object
 *   `vis_pair.json`: `vis_pair.lpips` is LPIPS_V and `vis_pair.dino_cos` is DINO_V
 
-Add `--n N` to steps 3 and 4 to use only the first N objects.
+Add `--n N` to steps 3 and 4 to use only the first N objects. The results then go to `released_n<N>/` instead of `released/`.
 
 
 ## 🏋 Training
@@ -259,6 +264,7 @@ Options:
 accelerate launch --config_file configs/accelerate-train.yaml scripts/train.py --config configs/voxelgen64.yaml
 ```
 The default configuration trains for 328,400 steps on 4 GPUs with 64 objects per GPU.
+For another number of GPUs, set `num_processes` in `configs/accelerate-train.yaml` (and `distributed_type: "NO"` for one GPU).
 ```sh
 Usage: scripts/train.py --config CONFIG [KEY=VALUE ...]
 Options:
