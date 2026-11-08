@@ -73,10 +73,10 @@ Three steps: background removal, structure generation, and meshing with the seco
 4. Build the CUDA extensions on a machine with an NVIDIA GPU:
     ```sh
     pip install flash-attn==2.7.3 --no-build-isolation
-    pip install "git+https://github.com/NVlabs/nvdiffrast.git@v0.3.1" --no-build-isolation
+    pip install "git+https://github.com/NVlabs/nvdiffrast.git@v0.4.0" --no-build-isolation
     pip install "git+https://github.com/JeffreyXiang/CuMesh.git@c4ad6125924fcedfd13f0bd61520ca2d24eb7a87" --no-build-isolation
     pip install "git+https://github.com/JeffreyXiang/FlexGEMM.git@6f4147d7a22017f491167d2b6b37ce673566e8ee" --no-build-isolation
-    pip install "git+https://github.com/yuyujunjun/o-voxel-gpu.git@fa9ae23eaefacfeee77e0608bb7c52e78d127a6a" --no-build-isolation
+    pip install "git+https://github.com/yuyujunjun/o-voxel-gpu.git@fa9ae23eaefacfeee77e0608bb7c52e78d127a6a" --no-build-isolation --no-deps
     pip install "git+https://github.com/facebookresearch/pytorch3d.git@v0.7.9" --no-build-isolation
     ```
 
