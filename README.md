@@ -59,30 +59,24 @@ Three steps: background removal, structure generation, and meshing with the seco
     pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
     ```
 
-2. Clone [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) into `third_party/TRELLIS.2` and install its dependencies
-   into the same environment. Its `setup.sh` must run on a machine with an NVIDIA GPU.
+2. Clone [TRELLIS.2](https://github.com/microsoft/TRELLIS.2) into `third_party/TRELLIS.2`:
     ```sh
-    git clone --recursive https://github.com/microsoft/TRELLIS.2.git third_party/TRELLIS.2
+    git clone https://github.com/microsoft/TRELLIS.2.git third_party/TRELLIS.2
     git -C third_party/TRELLIS.2 checkout 5565d24
-    cd third_party/TRELLIS.2 && . ./setup.sh --basic --flash-attn --nvdiffrast --cumesh --flexgemm && cd ../..
-    ```
-    `--basic` also tries `sudo apt install libjpeg-dev`. It is not needed here, so a failed `sudo` can be ignored.
-
-3. Install [o-voxel-gpu](https://github.com/yuyujunjun/o-voxel-gpu) in place of the `o_voxel` that TRELLIS.2 ships:
-    ```sh
-    git clone --recursive https://github.com/yuyujunjun/o-voxel-gpu.git
-    git -C o-voxel-gpu checkout fa9ae23
-    pip install ./o-voxel-gpu --no-build-isolation
     ```
 
-4. Install the remaining dependencies. Run this after step 2, which installs other versions of some of them:
+3. Install the Python dependencies:
     ```sh
     pip install -r requirements.txt
     ```
 
-5. Install [PyTorch3D](https://github.com/facebookresearch/pytorch3d), used by training and evaluation. It is built from
-   source on a machine with an NVIDIA GPU:
+4. Build the CUDA extensions on a machine with an NVIDIA GPU:
     ```sh
+    pip install flash-attn==2.7.3 --no-build-isolation
+    pip install "git+https://github.com/NVlabs/nvdiffrast.git@v0.3.1" --no-build-isolation
+    pip install "git+https://github.com/JeffreyXiang/CuMesh.git@c4ad6125924fcedfd13f0bd61520ca2d24eb7a87" --no-build-isolation
+    pip install "git+https://github.com/JeffreyXiang/FlexGEMM.git@6f4147d7a22017f491167d2b6b37ce673566e8ee" --no-build-isolation
+    pip install "git+https://github.com/yuyujunjun/o-voxel-gpu.git@fa9ae23eaefacfeee77e0608bb7c52e78d127a6a" --no-build-isolation
     pip install "git+https://github.com/facebookresearch/pytorch3d.git@v0.7.9" --no-build-isolation
     ```
 
