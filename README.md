@@ -228,7 +228,9 @@ HSSD and ABO subsets of TRELLIS-500K and kept Toys4k for testing.
 `PROJECT_DATA` defaults to `./data` and `VFM_IMAGE_ROOT` to `./data/TRELLIS-500K`.
 If `transforms.json` is present, conditions are drawn from views with an elevation between −10° and 30° when there are any.
 
-The occupancy is made from the meshes in two steps:
+The occupancy is made from the meshes in two steps. The voxelization runs on the GPU with
+[o-voxel-gpu](https://github.com/yuyujunjun/o-voxel-gpu), which gives the same voxels as TRELLIS.2's CPU o-voxel
+and is 15–170× faster.
 ```sh
 python scripts/voxelize_meshes.py --root <raw>/<subset> --max_workers 8
 python scripts/to_blender_frame.py --src_root <raw>/<subset> --dst_root $PROJECT_DATA/TRELLIS-500K-blender/<subset>
@@ -291,7 +293,8 @@ python scripts/evaluate.py --dataset toys4k --method voxelgen64_trained --step 3
 *   **[TRELLIS.2](https://github.com/microsoft/TRELLIS.2):**
     sparse transformer backbone, second-stage meshing, and data toolkit.
 *   **[o-voxel-gpu](https://github.com/yuyujunjun/o-voxel-gpu):**
-    GPU voxelization and voxel file I/O.
+    a CUDA port of TRELLIS.2's o-voxel. Mesh voxelization on the GPU with the same output as the CPU path,
+    15× faster on a cold start and 170× when warm (593K faces, 512³, A100), plus voxel file I/O.
 
 
 ## ⚖ License
