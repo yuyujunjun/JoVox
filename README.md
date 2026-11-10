@@ -1,6 +1,7 @@
 # <img src="assets/jovox_logo.svg" height="44" align="top" alt="JoVox logo"> JoVox: Joint Hierarchical Flow Matching for Lightweight Voxel Generation
 
 <a href="https://arxiv.org/abs/2611.10690"><img src="https://img.shields.io/badge/Paper-Arxiv-b31b1b.svg" alt="Paper"></a>
+<a href="https://yuyujunjun.github.io/Jovox-page/"><img src="https://img.shields.io/badge/Project-Page-blue" alt="Project Page"></a>
 <a href="https://huggingface.co/xiangjuntang/JoVox-64"><img src="https://img.shields.io/badge/Hugging%20Face-Model-yellow" alt="Hugging Face"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-green" alt="License"></a>
 
