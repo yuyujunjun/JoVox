@@ -132,7 +132,7 @@ Options:
                       mesh: turn the structure into a mesh with the second stage of TRELLIS.2
     --out             Output folder. Each stage reads the results of the previous one from it
     --in_dir          prep: folder of input images (.png, .jpg, .jpeg, .webp)
-    --fill            prep: fraction of the image covered by the longest side of the object (default 0.74)
+    --fill            prep: fraction of the image covered by the longest side of the object (default 0.72)
     --seed            voxel, mesh: random seed (default 0)
     --spec            voxel: voxelgen64 (the released model, default) or voxelgen64_trained (your checkpoint)
     --step            voxel: checkpoint step, only with voxelgen64_trained

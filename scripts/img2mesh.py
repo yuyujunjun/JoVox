@@ -15,7 +15,7 @@ if __name__ == "__main__":
     ap.add_argument("--in_dir", help="prep: folder of input images (.png, .jpg, .jpeg, .webp)")
     ap.add_argument("--out", required=True, help="output folder; each stage reads the results of the previous one from it")
     ap.add_argument("--seed", type=int, default=0, help="voxel and mesh: random seed")
-    ap.add_argument("--fill", type=float, default=0.74,
+    ap.add_argument("--fill", type=float, default=0.72,
                     help="prep: fraction of the image covered by the longest side of the object")
     ap.add_argument("--spec", default="voxelgen64",
                     help="voxel: voxelgen64 (the released model) or voxelgen64_trained (a checkpoint of your own training)")
